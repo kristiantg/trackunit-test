@@ -1,2 +1,2 @@
 export * from './types';
-export { QUERIES } from './client'; 
+export { QUERIES } from './queries'; 

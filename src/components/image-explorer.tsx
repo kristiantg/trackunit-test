@@ -3,13 +3,18 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { QUERIES, type GiphyResponse } from '@/api/giphy';
 
-export function ImageExplorer() {
+interface ImageExplorerProps {
+    searchQuery: string;
+}
+
+export function ImageExplorer({ searchQuery }: ImageExplorerProps) {
     const [offset, setOffset] = useState(0);
     const limit = 3;
+    const query = searchQuery.trim() || 'cat';
 
     const { data, isLoading, error } = useQuery<GiphyResponse>({
-        queryKey: ['cat-stickers', offset],
-        queryFn: () => QUERIES.getStickers({ query: 'cat', limit, offset }),
+        queryKey: ['stickers', query, offset],
+        queryFn: () => QUERIES.getStickers({ query, limit, offset }),
     });
 
     if (isLoading) {
@@ -30,13 +35,13 @@ export function ImageExplorer() {
 
     return (
         <div className="flex flex-col items-center gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 h-fit gap-4 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 w-full max-w-screen-lg mx-auto">
                 {data?.data.map((image, index) => (
-                    <div key={index} className="rounded-lg overflow-hidden shadow-lg">
+                    <div key={index} className="rounded-lg overflow-hidden shadow-lg flex items-center justify-center w-full">
                         <img
                             src={image.images.original.url}
-                            alt={`Cat sticker ${index + 1}`}
-                            className="max-w-[200px] max-h-[200px] object-cover"
+                            alt={`Sticker ${index + 1}`}
+                            className="w-full max-w-[200px] max-h-[200px] p-4 object-contain"
                         />
                     </div>
                 ))}
