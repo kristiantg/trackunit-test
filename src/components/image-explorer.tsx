@@ -1,18 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-
-interface GiphyImage {
-    images: {
-        original: {
-            url: string;
-        };
-    };
-}
-
-interface GiphyResponse {
-    data: GiphyImage[];
-}
+import { QUERIES, type GiphyResponse } from '@/api/giphy';
 
 export function ImageExplorer() {
     const [offset, setOffset] = useState(0);
@@ -20,15 +9,7 @@ export function ImageExplorer() {
 
     const { data, isLoading, error } = useQuery<GiphyResponse>({
         queryKey: ['cat-stickers', offset],
-        queryFn: async () => {
-            const response = await fetch(
-                `https://api.giphy.com/v1/stickers/search?q=cat&limit=${limit}&offset=${offset}&rating=g&api_key=1bkG7ky5cmw5SLyvNfElcR1iYVzs38Zq`
-            );
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        },
+        queryFn: () => QUERIES.getStickers({ query: 'cat', limit, offset }),
     });
 
     if (isLoading) {
