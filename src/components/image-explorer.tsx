@@ -1,16 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { QUERIES, type GiphyResponse } from '@/api/giphy';
 
-interface ImageExplorerProps {
-    searchQuery: string;
-}
-
-export function ImageExplorer({ searchQuery }: ImageExplorerProps) {
-    const [offset, setOffset] = useState(0);
+export function ImageExplorer() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const query = (searchParams.get('q') || '').trim();
     const limit = 3;
-    const query = searchQuery.trim() || 'cat';
 
     const { data, isLoading, error } = useQuery<GiphyResponse>({
         queryKey: ['stickers', query, offset],
@@ -26,41 +23,54 @@ export function ImageExplorer({ searchQuery }: ImageExplorerProps) {
     }
 
     const handlePrevious = () => {
-        setOffset(Math.max(0, offset - limit));
+        const newOffset = Math.max(0, offset - limit);
+        setSearchParams(prev => {
+            prev.set('offset', newOffset.toString());
+            return prev;
+        });
     };
 
     const handleNext = () => {
-        setOffset(offset + limit);
+        setSearchParams(prev => {
+            prev.set('offset', (offset + limit).toString());
+            return prev;
+        });
     };
 
     return (
         <div className="flex flex-col items-center gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 w-full max-w-screen-lg mx-auto">
-                {data?.data.map((image, index) => (
-                    <div key={index} className="rounded-lg overflow-hidden shadow-lg flex items-center justify-center w-full">
-                        <img
-                            src={image.images.original.url}
-                            alt={`Sticker ${index + 1}`}
-                            className="w-full max-w-[200px] max-h-[200px] p-4 object-contain"
-                        />
-                    </div>
-                ))}
-            </div>
-            <div className="flex gap-4">
-                <Button
-                    onClick={handlePrevious}
-                    disabled={offset === 0}
-                    variant="outline"
-                >
-                    Previous
-                </Button>
-                <Button
-                    onClick={handleNext}
-                    variant="default"
-                >
-                    Next
-                </Button>
-            </div>
+            {data && data.data.length === 0 ? (
+                <div className="text-center text-gray-500">No stickers found</div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 w-full max-w-screen-lg mx-auto">
+                    {data?.data.map((image, index) => (
+                        <div key={index} className="rounded-lg overflow-hidden shadow-lg flex items-center justify-center w-full">
+                            <img
+                                src={image.images.original.url}
+                                alt={`Sticker ${index + 1}`}
+                                className="w-full max-w-[200px] max-h-[200px] p-4 object-contain"
+                            />
+                        </div>
+                    ))}
+                </div>
+            )}
+            {data && data.data.length > 0 && (
+                <div className="flex gap-4">
+                    <Button
+                        onClick={handlePrevious}
+                        disabled={offset === 0}
+                        variant="outline"
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        onClick={handleNext}
+                        variant="default"
+                    >
+                        Next
+                    </Button>
+                </div>
+            )}
         </div>
     );
 } 
